@@ -21,13 +21,15 @@ int backLight = 13;
 
 int currentNumberOfPeople = 0;
 int statusPintu = TIDAK_SIAP_BUKA;
+char bufferA2[5];
 
 void setup()
 {
     pinMode(backLight, OUTPUT);
     digitalWrite(backLight, HIGH);
     lcd.begin(16,2);             
-    lcd.clear();             
+    lcd.clear();    
+    Serial.begin(9600);         
 }
 
 void setTemperatureToLCD(float temp) {
@@ -52,11 +54,23 @@ float getTemperatureC() {
     return (voltage - 0.5) * 100;
 }
 
+void recvFromA2() {
+    Serial.readBytes(bufferA2, 1);
+    if (bufferA2[0] == '1') {
+        assert (currentNumberOfPeople);
+        currentNumberOfPeople -= 1;
+    }
+}
+
 int adaOrangDiDepanPintu = 0; // toggled by rangefinder/ultrasonic sensor
 int pintuDibuka = 0; // toggled by motor DC sensor (?)
 
 void loop()
 {
+
+    recvFromA2();
+
+    // detect apakah ada orang di depan pintu, pake ultrasonic sensor
     if (adaOrangDiDepanPintu) {
         float temperatureC = getTemperatureC();
         setTemperatureToLCD(temperatureC);
