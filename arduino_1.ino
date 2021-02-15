@@ -4,6 +4,7 @@
 #define TIDAK_SIAP_BUKA 0
 #define MAX_ALLOWED_TEMPERATURE 37
 #define MAX_ALLOWED_PEOPLE 10
+#define DISTANCE_THRESHOLD 20
 
 const int kRS = 12;
 const int kRW = 11;
@@ -13,6 +14,9 @@ const int kD4 = 5;
 const int kD5 = 4;
 const int kD6 = 3;
 const int kD7 = 2;
+
+const int trigpin = 7;
+const int echopin = 10;
 
 LiquidCrystal lcd(kRS, kRW, kEnable, kD4, kD5, kD6, kD7);
 
@@ -62,6 +66,17 @@ void recvFromA2() {
     }
 }
 
+double getDistanceObject() {
+    digitalWrite(trigpin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigpin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigpin, LOW);
+
+    long tmp = pulseIn(echopin, HIGH);
+    return tmp / 74 / 2;
+}
+
 int adaOrangDiDepanPintu = 0; // toggled by rangefinder/ultrasonic sensor
 int pintuDibuka = 0; // toggled by motor DC sensor (?)
 
@@ -69,6 +84,14 @@ void loop()
 {
 
     recvFromA2();
+
+    while (!adaOrangDiDepanPintu) {
+        long inches = getDistanceObject();
+        Serial.write(inches);
+        if (inches < DISTANCE_THRESHOLD) {
+            adaOrangDiDepanPintu = 1;
+        }
+    }
 
     // detect apakah ada orang di depan pintu, pake ultrasonic sensor
     if (adaOrangDiDepanPintu) {
