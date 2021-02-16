@@ -28,6 +28,8 @@ LiquidCrystal lcd(kRS, kRW, kEnable, kD4, kD5, kD6, kD7);
 const int kPinTemp = A0;
 const int backLight = 13;
 
+const int kPinPIR = A2;
+
 int currentNumberOfPeople = 0;
 int statusPintu = TIDAK_SIAP_BUKA;
 char bufferToA2[5];
@@ -76,12 +78,12 @@ void LCDPrintJagaJarak() {
     lcd.print("Jaga jarak");
 }
 
-void LCDPrintSilakan() {
+void LCDPrintSilakanCekSuhu() {
     lcd.clear();
     lcd.setCursor(0,0);
-    lcd.print("Silakan");
+    lcd.print("Silakan Maju,");
     lcd.setCursor(0,1);
-    lcd.print("Maju");
+    lcd.print("dan cek suhu");
 }
 
 float getTemperatureC() {
@@ -166,11 +168,15 @@ void loop()
         } else {
         	buzzerOn(100);
         }
-        // detect gerakan dari pintu, DC Motor or apapun
-
-        if (statusPintu == SIAP_BUKA && currentNumberOfPeople < MAX_ALLOWED_PEOPLE) {
-          	//int speedDC = readDCSpeedFromPotentiometer();
-        	analogWrite(kPinDC, DCSpeed);  
+      	
+      if(statusPintu == SIAP_BUKA) {
+      	int sensorState = LOW;
+        while (sensorState == LOW) {
+          delay(100);
+          sensorState = digitalRead(kPinPIR);
+        }
+        if (sensorState == HIGH && currentNumberOfPeople < MAX_ALLOWED_PEOPLE) {
+            analogWrite(kPinDC, DCSpeed);  
           	statusPintu = TIDAK_SIAP_BUKA;
           	currentNumberOfPeople += 1;
             if (currentNumberOfPeople == MAX_ALLOWED_PEOPLE) {
@@ -179,9 +185,24 @@ void loop()
             delay(100);
             analogWrite(kPinDC, LOW);
         }
+      }
+      
+        // detect gerakan dari pintu, DC Motor or apapun
+		//int sensorState = digitalRead(kPinPIR);
+        //if (sensorState == HIGH && statusPintu == SIAP_BUKA && currentNumberOfPeople < MAX_ALLOWED_PEOPLE) {
+        //  	//int speedDC = readDCSpeedFromPotentiometer();
+        //	analogWrite(kPinDC, DCSpeed);  
+        //  	statusPintu = TIDAK_SIAP_BUKA;
+        //  	currentNumberOfPeople += 1;
+        //    if (currentNumberOfPeople == MAX_ALLOWED_PEOPLE) {
+        //        printPenuhToLCD();
+        //    }
+        //    delay(100);
+        //    analogWrite(kPinDC, LOW);
+        //}
         LCDPrintJagaJarak();
         delay(300);
-        LCDPrintSilakan();
+        LCDPrintSilakanCekSuhu();
         delay(50);
     }
     LCDPrintCapacity(currentNumberOfPeople);
