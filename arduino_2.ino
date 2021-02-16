@@ -1,5 +1,3 @@
-#include <LiquidCrystal.h>
-
 char bufferFromA1[6];
 const char peopleExit[6] = "decrA";
 
