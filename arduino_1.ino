@@ -186,6 +186,7 @@ void loop()
         }
         if (sensorState == HIGH && currentNumberOfPeople < MAX_ALLOWED_PEOPLE) {
             analogWrite(kPinDC, DCSpeed);  
+          	digitalWrite(kPinPIR, LOW);
           	statusPintu = TIDAK_SIAP_BUKA;
           	currentNumberOfPeople += 1;
             if (currentNumberOfPeople == MAX_ALLOWED_PEOPLE) {
