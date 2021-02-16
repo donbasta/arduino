@@ -6,6 +6,7 @@
 #define MAX_ALLOWED_PEOPLE 10
 #define DISTANCE_THRESHOLD 100
 
+// Pin for LCD
 const int kRS = 12;
 const int kRW = 11;
 const int kEnable = 8;
@@ -15,19 +16,23 @@ const int kD5 = 4;
 const int kD6 = 3;
 const int kD7 = 2;
 
-const int trigpin = 7;
-const int echopin = 6;
+LiquidCrystal lcd(kRS, kRW, kEnable, kD4, kD5, kD6, kD7);
 
+// Pin for Ultrasonic Detector
+const int kPinTrigger = 7;
+const int kPinEcho = 6;
+
+// Pin for buzzer
 const int kPinSpeaker = 9;
 
+// Pin for DC Motor and Potentiometer
 const int kPinDC = 10;
 const int kPinPotentiometer = A1;
-
-LiquidCrystal lcd(kRS, kRW, kEnable, kD4, kD5, kD6, kD7);
 
 const int kPinTemp = A0;
 const int backLight = 13;
 
+// Pin for PIR Motion sensor
 const int kPinPIR = A2;
 
 int currentNumberOfPeople = 0;
@@ -40,11 +45,10 @@ const char msg[6] = "decrA";
 int adaOrangDiDepanPintu = 0; // toggled by rangefinder/ultrasonic sensor
 int pintuDibuka = 0; // toggled by motor DC sensor (?)
 
-void setup()
-{
+void setup() {
   	pinMode(kPinSpeaker, OUTPUT);
-  	pinMode(trigpin, OUTPUT);
-  	pinMode(echopin, INPUT);
+  	pinMode(kPinTrigger, OUTPUT);
+  	pinMode(kPinEcho, INPUT);
     pinMode(backLight, OUTPUT);
     digitalWrite(backLight, HIGH);
     lcd.begin(16,2);             
@@ -59,11 +63,11 @@ void setTemperatureToLCD(float temp) {
     lcd.print(temp);
     lcd.print("C");
     lcd.setCursor(0,1);
-  if (temp <= MAX_ALLOWED_TEMPERATURE) {
-  	lcd.print("Suhu aman!");
-  } else {
-    lcd.print("Tidak boleh!");
-  }
+    if (temp <= MAX_ALLOWED_TEMPERATURE) {
+  	    lcd.print("Suhu aman!");
+    } else {
+        lcd.print("Tidak boleh!");
+    }
 }
 
 void printPenuhToLCD() {
@@ -97,13 +101,14 @@ float getTemperatureC() {
 void recvFromA2() {
     Serial.readBytes(bufferFromA2, 5);
   	if (strcmp(msg, bufferFromA2) == 0) {
-      if (currentNumberOfPeople > 0) {
-        currentNumberOfPeople -= 1;
-      }
-      for (int i = 0; i < 5; i++) {
-        bufferFromA2[i] = '0';
-      }
-  	}
+        if (currentNumberOfPeople > 0) {
+            currentNumberOfPeople -= 1;
+        }
+        // reset buffer
+        for (int i = 0; i < 5; i++) {
+            bufferFromA2[i] = '0';
+        }
+    }
 }
 
 void sendToA2(int a) {
@@ -114,7 +119,6 @@ void sendToA2(int a) {
       a = a / 10;
     }
   	bufferToA2[idx] = 'B';
-    //Serial.println(bufferToA2);
 	Serial.write(bufferToA2,5);
 }
 
@@ -126,29 +130,29 @@ void LCDPrintCapacity(int currentNum) {
     lcd.print(cap);
     lcd.setCursor(0,1);
     if (cap > 0) {
-      lcd.print("Welcome!");
+        lcd.print("Welcome!");
     } else {
-    	lcd.print("!!Penuh!!");
+        lcd.print("!!Penuh!!");
     }
 }
 
 void buzzerOn(int k_timeDelay) {
-	tone(kPinSpeaker, 440, k_timeDelay);
-  delay(100);
+    tone(kPinSpeaker, 440, k_timeDelay);
+    delay(k_timeDelay);
 }
 
 int readDCSpeedFromPotentiometer () {
-	return map(analogRead(kPinPotentiometer), 0, 1023, 0, 255);
+    return map(analogRead(kPinPotentiometer), 0, 1023, 0, 255);
 }
 
 int getDistanceObjectInCm() {
-    digitalWrite(trigpin, LOW);
+    digitalWrite(kPinTrigger, LOW);
     delayMicroseconds(2);
-    digitalWrite(trigpin, HIGH);
+    digitalWrite(kPinTrigger, HIGH);
     delayMicroseconds(10);
-    digitalWrite(trigpin, LOW);
+    digitalWrite(kPinTrigger, LOW);
   
-    long tmp = pulseIn(echopin, HIGH) * 1723 / 100000;
+    long tmp = pulseIn(kPinEcho, HIGH) * 1723 / 100000;
     return tmp;
 }
 
@@ -178,42 +182,29 @@ void loop()
         	buzzerOn(100);
         }
       	
-      if(statusPintu == SIAP_BUKA) {
-      	int sensorState = LOW;
-        while (sensorState == LOW) {
-          delay(100);
-          sensorState = digitalRead(kPinPIR);
-        }
-        if (sensorState == HIGH && currentNumberOfPeople < MAX_ALLOWED_PEOPLE) {
-            analogWrite(kPinDC, DCSpeed);  
-          	digitalWrite(kPinPIR, LOW);
-          	statusPintu = TIDAK_SIAP_BUKA;
-          	currentNumberOfPeople += 1;
-            if (currentNumberOfPeople == MAX_ALLOWED_PEOPLE) {
-                printPenuhToLCD();
+        if (statusPintu == SIAP_BUKA) {
+      	    int sensorState = LOW;
+            while (sensorState == LOW) {
+                delay(100);
+                sensorState = digitalRead(kPinPIR);
             }
-            delay(100);
-            analogWrite(kPinDC, LOW);
+            if (sensorState == HIGH && currentNumberOfPeople < MAX_ALLOWED_PEOPLE) {
+                analogWrite(kPinDC, DCSpeed);  
+                digitalWrite(kPinPIR, LOW);
+          	    statusPintu = TIDAK_SIAP_BUKA;
+          	    currentNumberOfPeople += 1;
+                if (currentNumberOfPeople == MAX_ALLOWED_PEOPLE) {
+                    printPenuhToLCD();
+                }
+                delay(100);
+                analogWrite(kPinDC, LOW);
+            }
         }
-      }
-      
-        // detect gerakan dari pintu, DC Motor or apapun
-		//int sensorState = digitalRead(kPinPIR);
-        //if (sensorState == HIGH && statusPintu == SIAP_BUKA && currentNumberOfPeople < MAX_ALLOWED_PEOPLE) {
-        //  	//int speedDC = readDCSpeedFromPotentiometer();
-        //	analogWrite(kPinDC, DCSpeed);  
-        //  	statusPintu = TIDAK_SIAP_BUKA;
-        //  	currentNumberOfPeople += 1;
-        //    if (currentNumberOfPeople == MAX_ALLOWED_PEOPLE) {
-        //        printPenuhToLCD();
-        //    }
-        //    delay(100);
-        //    analogWrite(kPinDC, LOW);
-        //}
         LCDPrintJagaJarak();
         delay(300);
         LCDPrintSilakanCekSuhu();
         delay(50);
     }
+    
     LCDPrintCapacity(currentNumberOfPeople);
 }
