@@ -8,7 +8,7 @@ int speedDC = 100;
 const int kPinDC = 10;
 
 int bufferFromA1ToInt() {
-    if (bufferFromA1[4] == 'A') {
+    if (bufferFromA1[4] != 'B') {
         return speedDC;
     }
 	int ret = 0;
@@ -39,7 +39,7 @@ void loop() {
     if (digitalRead(kPinPIR) == HIGH) {
         analogWrite(kPinDC, speedDC);  
         sendToA1();
-        delay(500);
+        delay(1000);
         analogWrite(kPinDC, LOW);
     }
 }
