@@ -4,7 +4,7 @@
 #define TIDAK_SIAP_BUKA 0
 #define MAX_ALLOWED_TEMPERATURE 37
 #define MAX_ALLOWED_PEOPLE 10
-#define DISTANCE_THRESHOLD 100
+#define DISTANCE_THRESHOLD 50
 
 const int kRS = 12;
 const int kRW = 11;
@@ -21,13 +21,11 @@ const int echopin = 6;
 LiquidCrystal lcd(kRS, kRW, kEnable, kD4, kD5, kD6, kD7);
 
 const int kPinTemp = A0;
-const int backLight = 13;
+int backLight = 13;
 
 int currentNumberOfPeople = 0;
 int statusPintu = TIDAK_SIAP_BUKA;
 char bufferA2[5];
-int adaOrangDiDepanPintu = 0; // toggled by rangefinder/ultrasonic sensor
-int pintuDibuka = 0; // toggled by motor DC sensor (?)
 
 void setup()
 {
@@ -46,11 +44,12 @@ void setTemperatureToLCD(float temp) {
     lcd.print(temp);
     lcd.print("C");
     lcd.setCursor(0,1);
+    delay(1000);
 }
 
 void printPenuhToLCD() {
-    //lcd.clear();
-    //lcd.setCursor(0,0);
+    lcd.clear();
+    lcd.setCursor(0,0);
     lcd.print("Penuh");
     lcd.setCursor(0,1);
 }
@@ -64,25 +63,42 @@ float getTemperatureC() {
 void recvFromA2() {
     Serial.readBytes(bufferA2, 1);
     if (bufferA2[0] == '1') {
+        //assert (currentNumberOfPeople);
         currentNumberOfPeople -= 1;
-        bufferA2[0] == '1';
     }
 }
 
 int getDistanceObjectInCm() {
+
     digitalWrite(trigpin, LOW);
     delayMicroseconds(2);
     digitalWrite(trigpin, HIGH);
     delayMicroseconds(10);
     digitalWrite(trigpin, LOW);
   
-    long tmp = pulseIn(echopin, HIGH) * 1723 / 100000;
+ 
+	
+    long tmp = pulseIn(echopin, HIGH);
+    Serial.print("tmp");
     Serial.println(tmp);
-    return tmp;
+    long t = tmp * 1723 / 100000;
+  Serial.println(t);
+    return t;
 }
+
+int adaOrangDiDepanPintu = 0; // toggled by rangefinder/ultrasonic sensor
+int pintuDibuka = 0; // toggled by motor DC sensor (?)
 
 void loop()
 {
+    // int cm = getDistanceObjectInCm();
+    // Serial.print("baca cm: ");
+    // Serial.println(cm);
+
+    // if (cm <= DISTANCE_THRESHOLD) {
+    //   adaOrang
+    // }
+
     recvFromA2();
   
   	adaOrangDiDepanPintu = 0;
@@ -93,6 +109,7 @@ void loop()
         if (cm < DISTANCE_THRESHOLD) {
             adaOrangDiDepanPintu = 1;
         }
+        delay(200);
     }
 
     long b = millis() - a;
@@ -111,5 +128,6 @@ void loop()
                 printPenuhToLCD();
             }
         }
+        delay(5000);
     }
 }
