@@ -32,8 +32,10 @@ const int kPinPIR = A2;
 
 int currentNumberOfPeople = 0;
 int statusPintu = TIDAK_SIAP_BUKA;
-char bufferToA2[5];
-char bufferFromA2[5];
+char bufferToA2[6];
+char bufferFromA2[6];
+
+const char msg[6] = "decrA";
 
 int adaOrangDiDepanPintu = 0; // toggled by rangefinder/ultrasonic sensor
 int pintuDibuka = 0; // toggled by motor DC sensor (?)
@@ -58,7 +60,7 @@ void setTemperatureToLCD(float temp) {
     lcd.print("C");
     lcd.setCursor(0,1);
   if (temp <= MAX_ALLOWED_TEMPERATURE) {
-  	lcd.print("Silakan masuk");
+  	lcd.print("Suhu aman!");
   } else {
     lcd.print("Tidak boleh!");
   }
@@ -93,11 +95,15 @@ float getTemperatureC() {
 }
 
 void recvFromA2() {
-    Serial.readBytes(bufferFromA2, 1);
-    if (bufferFromA2[0] == '1') {
+    Serial.readBytes(bufferFromA2, 5);
+  	if (strcmp(msg, bufferFromA2) == 0) {
+      if (currentNumberOfPeople > 0) {
         currentNumberOfPeople -= 1;
-        bufferFromA2[0] == '1';
-    }
+      }
+      for (int i = 0; i < 5; i++) {
+        bufferFromA2[i] = '0';
+      }
+  	}
 }
 
 void sendToA2(int a) {
@@ -107,8 +113,9 @@ void sendToA2(int a) {
       idx++;
       a = a / 10;
     }
+  	bufferToA2[idx] = 'B';
     //Serial.println(bufferToA2);
-	Serial.write(bufferToA2,4);
+	Serial.write(bufferToA2,5);
 }
 
 void LCDPrintCapacity(int currentNum) {
@@ -149,8 +156,10 @@ int DCSpeed = 0;
 
 void loop()
 {
+  	recvFromA2();	
+  
   	DCSpeed = readDCSpeedFromPotentiometer();
-  	sendToA2(DCSpeed);
+  	//sendToA2(DCSpeed);
   	adaOrangDiDepanPintu = 0;
 
     long cm = getDistanceObjectInCm();
@@ -162,7 +171,7 @@ void loop()
     if (adaOrangDiDepanPintu) {
         float temperatureC = getTemperatureC();
         setTemperatureToLCD(temperatureC);
-        if (temperatureC <= MAX_ALLOWED_TEMPERATURE) {
+        if (temperatureC <= MAX_ALLOWED_TEMPERATURE && currentNumberOfPeople < MAX_ALLOWED_PEOPLE) {
             statusPintu = SIAP_BUKA;
             delay(100);
         } else {
