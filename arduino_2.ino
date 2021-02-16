@@ -7,7 +7,9 @@ const char peopleExit[6] = "decrA";
 
 const int kPinPIR = 13;
 
-int speedDC = 0;
+int speedDC = 100;
+
+const int kPinDC = 10;
 
 int bufferFromA1ToInt() {
   if (bufferlul[4] == 'A') {
@@ -45,8 +47,11 @@ void loop() {
   recvFromA1();
   if (digitalRead(kPinPIR) == HIGH) {
     //Serial.println("tesuto");
+    //Serial.println(speedDC);
+    analogWrite(kPinDC, speedDC);  
     sendToA1();
+    delay(500);
+    analogWrite(kPinDC, LOW);
   }
-  delay(3000);
 }
 
