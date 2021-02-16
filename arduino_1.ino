@@ -87,9 +87,9 @@ void LCDPrintJagaJarak() {
 void LCDPrintSilakanCekSuhu() {
     lcd.clear();
     lcd.setCursor(0,0);
-    lcd.print("Silakan Maju,");
+    lcd.print("Antrian berikutnya,");
     lcd.setCursor(0,1);
-    lcd.print("dan cek suhu");
+    lcd.print("silakan cek suhu!");
 }
 
 float getTemperatureC() {
@@ -190,6 +190,7 @@ void loop()
             }
             if (sensorState == HIGH && currentNumberOfPeople < MAX_ALLOWED_PEOPLE) {
                 analogWrite(kPinDC, DCSpeed);  
+              	delay(1000);
                 digitalWrite(kPinPIR, LOW);
           	    statusPintu = TIDAK_SIAP_BUKA;
           	    currentNumberOfPeople += 1;
