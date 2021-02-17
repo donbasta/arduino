@@ -40,6 +40,7 @@ void loop() {
         analogWrite(kPinDC, speedDC);
         delay(1000);
         analogWrite(kPinDC, LOW);
+        while (digitalRead(kPinPIR) == HIGH);
         sendToA1();
     }
     delay(500);
