@@ -37,9 +37,10 @@ void recvFromA1() {
 void loop() {
     recvFromA1();
     if (digitalRead(kPinPIR) == HIGH) {
-        analogWrite(kPinDC, speedDC);  
-        sendToA1();
+        analogWrite(kPinDC, speedDC);
         delay(1000);
         analogWrite(kPinDC, LOW);
+        sendToA1();
     }
+    delay(500);
 }
