@@ -1,0 +1,13 @@
+﻿Name,Quantity,Component
+"U1",1," LCD 16 x 2 "
+"UArduino Pintu Masuk, UArduino Pintu Keluar",2," Arduino Uno R3"
+"R1, R2, R3",3,"1 kΩ Resistor"
+"UPengatur Suhu Badan",1," Temperature Sensor [TMP36]"
+"DISTRangefinder Pintu Masuk",1," Ultrasonic Distance Sensor"
+"PIEZO1",1," Piezo"
+"MMotor Pintu Masuk, MMotor Pintu Keluar",2," DC Motor"
+"BATBaterai Motor DC Masuk, BATBaterai Motor DC Keluar",2," 9V Battery"
+"Rpot1",1,"250 kΩ Potentiometer"
+"T1, T2",2," NPN Transistor (BJT)"
+"PIRSensor Gerak Pintu Masuk",1,"9.598552976277688 , -82.00961280756485 , -143.97829464416947  PIR Sensor"
+"PIRSensor Gerak Pintu Keluar",1,"1.6255233748714772 , -134.86849823960287 , -225.94774910712036 , -70.51896549018485  PIR Sensor"
