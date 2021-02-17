@@ -64,9 +64,9 @@ void setTemperatureToLCD(float temp) {
     lcd.print("C");
     lcd.setCursor(0,1);
     if (temp <= MAX_ALLOWED_TEMPERATURE) {
-  	    lcd.print("Suhu aman!");
+  	    lcd.print("Pintu siap buka");
     } else {
-        lcd.print("Tidak boleh!");
+        lcd.print("Dilarang masuk!");
     }
 }
 
@@ -74,6 +74,15 @@ void printPenuhToLCD() {
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("Penuh");
+}
+
+void printCurrentNumberOfPeopleToLCD() {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Isi toko now:");
+  	lcd.setCursor(0,1);
+  	lcd.print(currentNumberOfPeople);
+    lcd.print(" orang");
 }
 
 void LCDPrintJagaJarak() {
@@ -158,12 +167,11 @@ int getDistanceObjectInCm() {
 
 int DCSpeed = 0;
 
-void loop()
-{
+void loop() {
   	recvFromA2();	
   
   	DCSpeed = readDCSpeedFromPotentiometer();
-  	//sendToA2(DCSpeed);
+  	sendToA2(DCSpeed);
   	adaOrangDiDepanPintu = 0;
 
     long cm = getDistanceObjectInCm();
@@ -196,8 +204,10 @@ void loop()
           	    currentNumberOfPeople += 1;
                 if (currentNumberOfPeople == MAX_ALLOWED_PEOPLE) {
                     printPenuhToLCD();
+                } else {
+                	printCurrentNumberOfPeopleToLCD();
                 }
-                delay(100);
+                delay(200);
                 analogWrite(kPinDC, LOW);
             }
         }
