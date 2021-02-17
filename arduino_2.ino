@@ -1,11 +1,9 @@
-char bufferFromA1[6];
 const char peopleExit[6] = "decrA";
-
 const int kPinPIR = 13;
+const int kPinDC = 10;
 
 int speedDC = 100;
-
-const int kPinDC = 10;
+char bufferFromA1[6];
 
 int bufferFromA1ToInt() {
     if (bufferFromA1[4] != 'B') {
